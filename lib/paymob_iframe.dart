@@ -35,14 +35,7 @@ class PaymobIFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _launchURL(redirectURL);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment'),
-      ),
-      body: const Center(
-        child: CircularProgressIndicator.adaptive(),
-      ),
-    );
+    return Container();
   }
 
   Future<void> _launchURL(String url) async {
