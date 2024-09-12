@@ -32,7 +32,6 @@ class PaymobIFrame extends StatefulWidget {
 
 class _PaymobIFrameState extends State<PaymobIFrame> {
   bool _isLoading = true;
-  late Timer _urlCheckTimer;
 
   @override
   void initState() {
@@ -40,12 +39,7 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
     _launchURL(widget.redirectURL);
   }
 
-  @override
-  void dispose() {
-    _urlCheckTimer.cancel();
-    super.dispose();
-  }
-
+  
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -53,40 +47,24 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
         _isLoading = false;
       });
       await launchUrl(uri);
-      _urlCheckTimer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
-        _handleUrlResponse(url);
-      });
+      if (_isPaymentResponse(uri)) {
+        final params = _getParamFromURL(uri.toString());
+        final response = PaymobResponse.fromJson(params);
+        if (widget.onPayment != null) {
+          widget.onPayment!(response);
+        }
+        Navigator.pop(context, response);
+      }
     } else {
-      setState(() {
-        _isLoading = false;
-      });
       throw 'Could not launch $url';
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator.adaptive()
-            : const Text('Redirecting...'),
-      ),
-    );
-  }
-
-  void _handleUrlResponse(String url) {
-    if (url.contains('txn_response_code') &&
-        url.contains('success') &&
-        url.contains('id')) {
-      final params = _getParamFromURL(url);
-      final response = PaymobResponse.fromJson(params);
-      if (widget.onPayment != null) {
-        widget.onPayment!(response);
-      }
-      Navigator.pop(context, response);
-      _urlCheckTimer.cancel();
-    }
+  bool _isPaymentResponse(Uri uri) {
+    // Check if the URL contains payment response indicators
+    return uri.queryParameters.containsKey('txn_response_code') &&
+           uri.queryParameters.containsKey('success') &&
+           uri.queryParameters.containsKey('id');
   }
 
   Map<String, dynamic> _getParamFromURL(String url) {
@@ -97,4 +75,14 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
     });
     return data;
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text('Redirecting...'),
+      ),
+    );
+  }
+
 }
