@@ -31,21 +31,15 @@ class PaymobIFrame extends StatefulWidget {
 }
 
 class _PaymobIFrameState extends State<PaymobIFrame> {
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
     _launchURL(widget.redirectURL);
   }
 
-  
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      setState(() {
-        _isLoading = false;
-      });
       await launchUrl(uri);
       if (_isPaymentResponse(uri)) {
         final params = _getParamFromURL(uri.toString());
@@ -63,8 +57,8 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
   bool _isPaymentResponse(Uri uri) {
     // Check if the URL contains payment response indicators
     return uri.queryParameters.containsKey('txn_response_code') &&
-           uri.queryParameters.containsKey('success') &&
-           uri.queryParameters.containsKey('id');
+        uri.queryParameters.containsKey('success') &&
+        uri.queryParameters.containsKey('id');
   }
 
   Map<String, dynamic> _getParamFromURL(String url) {
@@ -79,10 +73,12 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text('Redirecting...'),
+      appBar: AppBar(
+        title: const Text('Payment'),
+      ),
+      body: const Center(
+        child: CircularProgressIndicator.adaptive(),
       ),
     );
   }
-
 }
