@@ -32,11 +32,18 @@ class PaymobIFrame extends StatefulWidget {
 
 class _PaymobIFrameState extends State<PaymobIFrame> {
   bool _isLoading = true;
+  late Timer _urlCheckTimer;
 
   @override
   void initState() {
     super.initState();
     _launchURL(widget.redirectURL);
+  }
+
+  @override
+  void dispose() {
+    _urlCheckTimer.cancel();
+    super.dispose();
   }
 
   Future<void> _launchURL(String url) async {
@@ -46,7 +53,9 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
         _isLoading = false;
       });
       await launchUrl(uri);
-      _handleUrlResponse(url);
+      _urlCheckTimer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
+        _handleUrlResponse(url);
+      });
     } else {
       setState(() {
         _isLoading = false;
@@ -61,7 +70,7 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
       body: Center(
         child: _isLoading
             ? const CircularProgressIndicator.adaptive()
-            : Text('Redirecting...'),
+            : const Text('Redirecting...'),
       ),
     );
   }
@@ -76,6 +85,7 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
         widget.onPayment!(response);
       }
       Navigator.pop(context, response);
+      _urlCheckTimer.cancel();
     }
   }
 
