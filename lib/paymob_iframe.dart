@@ -31,40 +31,47 @@ class PaymobIFrame extends StatefulWidget {
 }
 
 class _PaymobIFrameState extends State<PaymobIFrame> {
-  bool _isLoading = true;
+  WebViewController? controller;
 
   @override
   void initState() {
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.contains('txn_response_code') &&
+                request.url.contains('success') &&
+                request.url.contains('id')) {
+              final params = _getParamFromURL(request.url);
+              final response = PaymobResponse.fromJson(params);
+              if (widget.onPayment != null) {
+                widget.onPayment!(response);
+              }
+              Navigator.pop(context, response);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.redirectURL));
     super.initState();
-    _launchURL(widget.redirectURL);
   }
 
-  
-  Future<void> _launchURL(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      setState(() {
-        _isLoading = false;
-      });
-      await launchUrl(uri);
-      if (_isPaymentResponse(uri)) {
-        final params = _getParamFromURL(uri.toString());
-        final response = PaymobResponse.fromJson(params);
-        if (widget.onPayment != null) {
-          widget.onPayment!(response);
-        }
-        Navigator.pop(context, response);
-      }
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  bool _isPaymentResponse(Uri uri) {
-    // Check if the URL contains payment response indicators
-    return uri.queryParameters.containsKey('txn_response_code') &&
-           uri.queryParameters.containsKey('success') &&
-           uri.queryParameters.containsKey('id');
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: controller == null
+          ? const Center(
+              child: CircularProgressIndicator.adaptive(),
+            )
+          : SafeArea(
+              child: WebViewWidget(
+                controller: controller!,
+              ),
+            ),
+    );
   }
 
   Map<String, dynamic> _getParamFromURL(String url) {
@@ -75,14 +82,4 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
     });
     return data;
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('Redirecting...'),
-      ),
-    );
-  }
-
 }
