@@ -9,6 +9,9 @@ class PaymobIFrame extends StatefulWidget {
 
   final String redirectURL;
   final void Function(PaymobResponse)? onPayment;
+  static void registerWebViewImplementation() {
+    registerWebViewWebImpementation();
+  }
 
   static Future<PaymobResponse?> show({
     required BuildContext context,
