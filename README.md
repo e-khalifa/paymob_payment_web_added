@@ -1,4 +1,4 @@
-# paymob_payment_web_added
+# paymob_payment
 
 This package is a modified version of the [paymob_payment](https://github.com/AhmedAbogameel/paymob_payment) package to support web functionality. 
 
