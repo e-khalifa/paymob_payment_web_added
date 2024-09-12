@@ -2,6 +2,9 @@ part of 'paymob_payment.dart';
 
 class PaymobPayment {
   static PaymobPayment instance = PaymobPayment();
+  static void registerWebView() {
+    registerWebViewWebImpementation();
+  }
 
   bool _isInitialized = false;
 
