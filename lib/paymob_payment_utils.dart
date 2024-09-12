@@ -13,12 +13,6 @@ class PaymobPayment {
   late String _iFrameURL;
   late int _userTokenExpiration;
 
-  void registerWebView() {
-    registerWebViewWebImpementation();
-  }
-
-  bool salma = false;
-
   /// Initializing PaymobPayment instance.
   Future<bool> initialize({
     /// It is a unique identifier for the merchant which used to authenticate your requests calling any of Accept's API.
