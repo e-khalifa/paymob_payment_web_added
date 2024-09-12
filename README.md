@@ -16,3 +16,5 @@ dependencies:
   paymob_payment:
     git:
       url: https://github.com/e-khalifa/paymob_payment_web_added.git
+      ref: url_launcher
+
