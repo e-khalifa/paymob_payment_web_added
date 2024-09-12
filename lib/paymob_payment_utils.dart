@@ -2,9 +2,6 @@ part of 'paymob_payment.dart';
 
 class PaymobPayment {
   static PaymobPayment instance = PaymobPayment();
-  static void registerWebView() {
-    registerWebViewWebImpementation();
-  }
 
   bool _isInitialized = false;
 
@@ -16,19 +13,27 @@ class PaymobPayment {
   late String _iFrameURL;
   late int _userTokenExpiration;
 
+  void registerWebView() {
+    registerWebViewWebImpementation();
+  }
+
+  bool salma = false;
 
   /// Initializing PaymobPayment instance.
   Future<bool> initialize({
     /// It is a unique identifier for the merchant which used to authenticate your requests calling any of Accept's API.
     /// from dashboard Select Settings -> Account Info -> API Key
     required String apiKey,
+
     /// from dashboard Select Developers -> Payment Integrations -> Online Card ID
-    required  int integrationID,
+    required int integrationID,
+
     /// from paymob Select Developers -> iframes
-    required  int iFrameID,
+    required int iFrameID,
+
     /// The expiration time of this payment token in seconds. (The maximum is 3600 seconds which is an hour)
     int userTokenExpiration = 3600,
-}) async {
+  }) async {
     if (_isInitialized) {
       return true;
     }
@@ -37,7 +42,8 @@ class PaymobPayment {
     _apiKey = apiKey;
     _integrationID = integrationID;
     _iFrameID = iFrameID;
-    _iFrameURL = 'https://accept.paymobsolutions.com/api/acceptance/iframes/$_iFrameID?payment_token=';
+    _iFrameURL =
+        'https://accept.paymobsolutions.com/api/acceptance/iframes/$_iFrameID?payment_token=';
     _isInitialized = true;
     _userTokenExpiration = userTokenExpiration;
     return _isInitialized;
@@ -112,22 +118,28 @@ class PaymobPayment {
 
   /// Proceed to pay with only calling this function.
   /// Opens a WebView at Paymob redirectedURL to accept user payment info.
-  Future<PaymobResponse?> pay({
-    /// BuildContext for navigation to WebView
-    required BuildContext context,
-    /// Which Currency you would pay in.
-    required String currency,
-    /// Payment amount in cents EX: 20000 is an 200 EGP
-    required String amountInCents,
-    /// Optional Callback if you can use return result of pay function or use this callback
-    void Function(PaymobResponse response)? onPayment,
-    /// list of json objects contains the contents of the purchase.
-    List? items,
-    /// The billing data related to the customer related to this payment.
-    PaymobBillingData? billingData
-  }) async {
+  Future<PaymobResponse?> pay(
+      {
+      /// BuildContext for navigation to WebView
+      required BuildContext context,
+
+      /// Which Currency you would pay in.
+      required String currency,
+
+      /// Payment amount in cents EX: 20000 is an 200 EGP
+      required String amountInCents,
+
+      /// Optional Callback if you can use return result of pay function or use this callback
+      void Function(PaymobResponse response)? onPayment,
+
+      /// list of json objects contains the contents of the purchase.
+      List? items,
+
+      /// The billing data related to the customer related to this payment.
+      PaymobBillingData? billingData}) async {
     if (!_isInitialized) {
-      throw Exception('PaymobPayment is not initialized call:`PaymobPayment.instance.initialize`');
+      throw Exception(
+          'PaymobPayment is not initialized call:`PaymobPayment.instance.initialize`');
     }
     final authToken = await _getAuthToken();
     final orderID = await _addOrder(
