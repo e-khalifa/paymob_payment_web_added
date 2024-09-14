@@ -94,9 +94,6 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
         }
         return NavigationDecision.navigate;
       },
-      webSpecificParams: const WebSpecificParams(
-        printDebugInfo: true,
-      ),
       mobileSpecificParams: const MobileSpecificParams(
         androidEnableHybridComposition: true,
       ),
