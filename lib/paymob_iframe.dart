@@ -71,32 +71,39 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
       width: MediaQuery.of(context).size.width,
       onWebViewCreated: (controller) {
         webviewController = controller;
-        debugPrint('webviewController initialized: $webviewController');
+        debugPrint('WebViewXController initialized: $webviewController');
       },
-      onPageStarted: (src) {
-        debugPrint('A new page has started loading: $src');
-      },
-      onPageFinished: (src) {
-        debugPrint('The page has finished loading: $src');
-      },
-      navigationDelegate: (navigation) {
-        final url = navigation.content.source;
-        if (url.contains('txn_response_code') &&
-            url.contains('success') &&
-            url.contains('id')) {
-          final params = _getParamFromURL(url);
-          final response = PaymobResponse.fromJson(params);
-          if (widget.onPayment != null) {
-            widget.onPayment!(response);
+      javascriptMode: JavascriptMode.unrestricted,
+      navigationDelegate: (NavigationRequest request) {
+        try {
+          final url = request.content.source;
+          debugPrint('Navigating to URL: $url');
+
+          if (url.contains('txn_response_code') &&
+              url.contains('success') &&
+              url.contains('id')) {
+            final params = _getParamFromURL(url);
+            final response = PaymobResponse.fromJson(params);
+
+            if (widget.onPayment != null) {
+              widget.onPayment!(response);
+            }
+            Navigator.pop(context, response);
+            return NavigationDecision.prevent;
           }
-          Navigator.pop(context, response);
-          return NavigationDecision.prevent;
+        } catch (e) {
+          debugPrint('Error during navigation: $e');
+          return NavigationDecision.navigate;
         }
+
         return NavigationDecision.navigate;
       },
-      mobileSpecificParams: const MobileSpecificParams(
-        androidEnableHybridComposition: true,
-      ),
+      onPageStarted: (url) {
+        debugPrint('Page started loading: $url');
+      },
+      onPageFinished: (url) {
+        debugPrint('Page finished loading: $url');
+      },
     );
   }
 }
