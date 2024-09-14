@@ -31,47 +31,17 @@ class PaymobIFrame extends StatefulWidget {
 }
 
 class _PaymobIFrameState extends State<PaymobIFrame> {
-  WebViewController? controller;
+  WebViewXController? webviewController;
 
   @override
   void initState() {
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) {
-            if (request.url.contains('txn_response_code') &&
-                request.url.contains('success') &&
-                request.url.contains('id')) {
-              final params = _getParamFromURL(request.url);
-              final response = PaymobResponse.fromJson(params);
-              if (widget.onPayment != null) {
-                widget.onPayment!(response);
-              }
-              Navigator.pop(context, response);
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.redirectURL));
     super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: controller == null
-          ? const Center(
-              child: CircularProgressIndicator.adaptive(),
-            )
-          : SafeArea(
-              child: WebViewWidget(
-                controller: controller!,
-              ),
-            ),
-    );
+  void dispose() {
+    webviewController?.dispose();
+    super.dispose();
   }
 
   Map<String, dynamic> _getParamFromURL(String url) {
@@ -81,5 +51,60 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
       data[key] = value;
     });
     return data;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: webviewController == null
+          ? const Center(
+              child: CircularProgressIndicator.adaptive(),
+            )
+          : SafeArea(
+              child: buildWebViewX(),
+            ),
+    );
+  }
+
+  Widget buildWebViewX() {
+    return WebViewX(
+      key: const ValueKey('webviewx'),
+      initialContent: widget.redirectURL,
+      initialSourceType: SourceType.url,
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      onWebViewCreated: (controller) {
+        setState(() {
+          webviewController = controller;
+        });
+      },
+      onPageStarted: (src) {
+        debugPrint('A new page has started loading: $src');
+      },
+      onPageFinished: (src) {
+        debugPrint('The page has finished loading: $src');
+      },
+      navigationDelegate: (navigation) {
+        final url = navigation.content.source;
+        if (url.contains('txn_response_code') &&
+            url.contains('success') &&
+            url.contains('id')) {
+          final params = _getParamFromURL(url);
+          final response = PaymobResponse.fromJson(params);
+          if (widget.onPayment != null) {
+            widget.onPayment!(response);
+          }
+          Navigator.pop(context, response);
+          return NavigationDecision.prevent;
+        }
+        return NavigationDecision.navigate;
+      },
+      webSpecificParams: const WebSpecificParams(
+        printDebugInfo: true,
+      ),
+      mobileSpecificParams: const MobileSpecificParams(
+        androidEnableHybridComposition: true,
+      ),
+    );
   }
 }
