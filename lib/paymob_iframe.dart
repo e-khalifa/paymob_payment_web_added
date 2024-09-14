@@ -56,13 +56,9 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: webviewController == null
-          ? const Center(
-              child: CircularProgressIndicator.adaptive(),
-            )
-          : SafeArea(
-              child: buildWebViewX(),
-            ),
+      body: SafeArea(
+        child: buildWebViewX(),
+      ),
     );
   }
 
@@ -74,9 +70,8 @@ class _PaymobIFrameState extends State<PaymobIFrame> {
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       onWebViewCreated: (controller) {
-        setState(() {
-          webviewController = controller;
-        });
+        webviewController = controller;
+        debugPrint('webviewController initialized: $webviewController');
       },
       onPageStarted: (src) {
         debugPrint('A new page has started loading: $src');
